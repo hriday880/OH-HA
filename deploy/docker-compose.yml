@@ -1,0 +1,38 @@
+# ==============================================================================
+# Docker Compose Deployment Blueprint
+# Local Development & Production Server Deployment
+# ==============================================================================
+
+version: "3.8"
+
+services:
+  openhuman-hermes-bot:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    image: openhuman-hermes-bot:latest
+    container_name: openhuman_hermes_bot
+    restart: unless-stopped
+    ports:
+      - "${PORT:-8080}:8080"
+    env_file:
+      - .env
+    environment:
+      - PORT=8080
+      - HOST=0.0.0.0
+      - ENVIRONMENT=production
+      - PYTHONUNBUFFERED=1
+      - MALLOC_ARENA_MAX=2
+      - VAULT_PATH=/app/vault
+    volumes:
+      - vault_data:/app/vault
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8080/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  vault_data:
+    driver: local

@@ -1,0 +1,41 @@
+# ==============================================================================
+# Fly.io Application Configuration
+# Continuous MicroVM Runtime for OpenHuman & Hermes Telegram Companion
+# ==============================================================================
+
+app = "openhuman-hermes-bot"
+primary_region = "iad"
+
+[build]
+  dockerfile = "deploy/Dockerfile"
+
+[env]
+  PORT = "8080"
+  HOST = "0.0.0.0"
+  ENVIRONMENT = "production"
+  LOG_LEVEL = "INFO"
+  LLM_PROVIDER = "openrouter"
+  LLM_MODEL = "nousresearch/hermes-3-llama-3.1-8b"
+  VAULT_PATH = "/app/vault"
+  AUTO_SYNC_INTERVAL_SECONDS = "1800"
+  GIT_BRANCH = "main"
+  MAX_REASONING_STEPS = "5"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+  [[http_service.checks]]
+    grace_period = "10s"
+    interval = "30s"
+    method = "GET"
+    timeout = "5s"
+    path = "/health"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"
