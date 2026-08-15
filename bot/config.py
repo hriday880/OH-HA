@@ -12,7 +12,7 @@ import logging
 import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Union
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator, AliasChoices
 try:
     from pydantic_settings import BaseSettings, SettingsConfigDict
     _SETTINGS_BASE = BaseSettings
@@ -43,6 +43,7 @@ class Config(_SETTINGS_BASE):
     # Telegram Bot Settings
     telegram_bot_token: Optional[str] = Field(
         default=None,
+        validation_alias=AliasChoices("TELEGRAM_BOT_TOKEN", "TELEGRAM_TOKEN"),
         description="Telegram Bot API Token (from @BotFather)",
     )
     allowed_telegram_user_ids: List[int] = Field(
@@ -61,6 +62,7 @@ class Config(_SETTINGS_BASE):
     )
     llm_api_key: Optional[str] = Field(
         default=None,
+        validation_alias=AliasChoices("LLM_API_KEY", "HERMES_API_KEY", "GROQ_API_KEY", "OPENHUMAN_API_KEY"),
         description="API key for the primary LLM provider",
     )
     llm_base_url: Optional[str] = Field(
@@ -174,21 +176,6 @@ class Config(_SETTINGS_BASE):
         extra="ignore",
         case_sensitive=False,
     )
-
-    @model_validator(mode="before")
-    @classmethod
-    def load_from_environment(cls, data: Any) -> Any:
-        """Populate missing fields from os.environ."""
-        if data is None:
-            data = {}
-        if isinstance(data, dict):
-            env_data = {}
-            for field_name in cls.model_fields.keys():
-                env_key = field_name.upper()
-                if field_name not in data and env_key in os.environ:
-                    env_data[field_name] = os.environ[env_key]
-            return {**env_data, **data}
-        return data
 
     @field_validator("allowed_telegram_user_ids", mode="before")
     @classmethod
