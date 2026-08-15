@@ -75,6 +75,10 @@ class TelegramBotService:
         self.is_running = True
         logger.info("Starting Telegram Bot Service...")
 
+        has_token = bool(self.config.telegram_bot_token)
+        env_val = self.config.environment
+        logger.info(f"DEBUG-STARTUP: token_present={has_token}, HAS_PTB={HAS_PTB}, env={env_val}")
+
         # If a real token is provided and PTB is installed, start live polling
         if self.config.telegram_bot_token and HAS_PTB and self.config.environment != "test":
             try:
